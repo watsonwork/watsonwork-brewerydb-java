@@ -1,0 +1,35 @@
+info:
+    app:
+       name: {build.app.name}
+       group: {build.app.group}
+       description: {build.app.description}
+       version: {build.app.version}
+       buildtime: {build.app.buildtime}
+
+spring:
+        application:
+             name: {build.app.name}
+
+server:
+        port: ${HTTP_PORT:9080}
+        tomcat:
+             uri-encoding: ${URI_ENCODING:UTF-8}
+
+watsonwork:
+        webhook:
+            secret: ${WEBHOOK_SECRET:eue4xl81qyzg5rtie0f5gsno4aaxgtj5}
+        app:
+            id: ${APP_ID:fc9e4a66-6520-4824-bca7-dd7466476dcd}
+            secret: ${APP_SECRET:as5te3ud61wejbxi2o2m2yd7lx74x88k}
+        api:
+            uri: ${WATSON_WORK_API_URI:https://api.watsonwork.ibm.com}
+
+graphql:
+        api:
+            uri: ${GRAPHQL_API_URI:https://api.watsonwork.ibm.com}
+
+
+brewerydb:
+        api:
+            uri: ${BREWERYDB_API_URI:http://api.brewerydb.com/}
+            key: ${BREWERYDB_API_KEY:ad6f66fc6f2b94087954def7e165d9ca}
