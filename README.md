@@ -63,7 +63,7 @@ Prerequisite for running the app using IntelliJ IDEA:
 - Install [Lombok Plugin](https://plugins.jetbrains.com/plugin/6317-lombok-plugin) for IntelliJ IDEA
 - Install [Ngrok](https://ngrok.com/) - used for testing the app locally without deploying on any PaaS
 
-1. [Fork it](https://github.com/watsonwork/watsonwork-spring-boot/fork)
+1. [Fork it](https://github.com/watsonwork/watsonwork-brewerydb-java/fork)
 2. Clone the project `git clone https://github.com/YOUR_GITHUB_USERNAME/watsonwork-brewerydb-java.git`
 3. Open IntelliJ IDEA `File -> New -> Project from Exisiting Sources... `
 4. Navigate to the project and select `build.gradle`. Click `OK`
