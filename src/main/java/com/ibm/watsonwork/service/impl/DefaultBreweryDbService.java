@@ -143,7 +143,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 String targetText = "";
                 if (brewery.getData().getDescription() != null) {
-                    targetText += String.format("*Description*: %s \\n", brewery.getData().getDescription().replace('"', '\"'));
+                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getDescription(),"utf8"));
                 }
 
                 if (brewery.getData().getWebsite() != null) {
@@ -200,11 +200,11 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 String targetText = "";
                 if (brewery.getData().getName() != null) {
-                    targetText += String.format("*Brewery*: %s \\n", brewery.getData().getName().replace('"', '\"'));
+                    targetText += String.format("*Brewery*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getName(),"utf8"));
                 }
 
                 if (brewery.getData().getDescription() != null) {
-                    targetText += String.format("*Description*: %s \\n", brewery.getData().getDescription().replace('"', '\"'));
+                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getDescription(),"utf8"));
                 }
 
                 if (brewery.getData().getWebsite() != null) {
