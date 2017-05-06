@@ -89,7 +89,7 @@ Prerequisite for running the app using IntelliJ IDEA:
     brewerydb:
             api:
                 uri: ${BREWERYDB_API_URI:http://api.brewerydb.com/}
-                key: ${BREWERYDB_API_KEY:you-api-key}                
+                key: ${BREWERYDB_API_KEY:your-api-key}                
  
     google:
             api:
