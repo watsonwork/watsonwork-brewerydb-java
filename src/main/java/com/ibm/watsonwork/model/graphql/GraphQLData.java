@@ -1,4 +1,4 @@
-package com.ibm.watsonwork.model;
+package com.ibm.watsonwork.model.graphql;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,5 +14,8 @@ public class GraphQLData {
 
     @JsonProperty("createTargetedMessage")
     private Object createTargetedMessage;
+
+    @JsonProperty("message")
+    private Message message;
 
 }

@@ -8,7 +8,7 @@ import com.ibm.watsonwork.ApplicationBootstrap;
 import com.ibm.watsonwork.WatsonWorkConstants;
 import com.ibm.watsonwork.WatsonWorkProperties;
 import com.ibm.watsonwork.client.AuthClient;
-import com.ibm.watsonwork.model.TokenResponse;
+import com.ibm.watsonwork.model.graphql.TokenResponse;
 import okhttp3.OkHttpClient;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;

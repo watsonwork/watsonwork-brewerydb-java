@@ -1,6 +1,6 @@
 package com.ibm.watsonwork.service;
 
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.WebhookEvent;
 
 public interface AuthService extends Service {
 

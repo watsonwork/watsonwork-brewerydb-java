@@ -1,14 +1,10 @@
 package com.ibm.watsonwork.service.impl;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.ibm.watsonwork.client.GraphQLClient;
-import com.ibm.watsonwork.model.Annotation;
-import com.ibm.watsonwork.model.Button;
-import com.ibm.watsonwork.model.GraphQLQuery;
-import com.ibm.watsonwork.model.GraphQLResponse;
-import com.ibm.watsonwork.model.TargetedMessage;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.*;
 import com.ibm.watsonwork.service.AuthService;
 import com.ibm.watsonwork.service.GraphQLService;
 import org.slf4j.Logger;
@@ -29,6 +25,7 @@ public class DefaultGraphQLService implements GraphQLService {
 
     @Autowired
     private GraphQLClient graphQLClient;
+
 
     @Override
     public void createMessage(WebhookEvent webhookEvent, TargetedMessage targetedMessage) {
@@ -92,7 +89,7 @@ public class DefaultGraphQLService implements GraphQLService {
         call.enqueue(new Callback<GraphQLResponse>() {
             @Override
             public void onResponse(Call<GraphQLResponse> call, Response<GraphQLResponse> response) {
-                LOGGER.info("GraphQL call createTargetedMessage successful.");
+                LOGGER.info("GraphQL call createTargetedMessage successful."+response);
             }
 
             @Override
@@ -102,5 +99,38 @@ public class DefaultGraphQLService implements GraphQLService {
         });
 
     }
+
+    @Override
+    public Message getMessage(String messageId) {
+
+        String body = "query {" +
+                "        message(id: \""+ messageId+"\") {" +
+                "            id" +
+                "            content" +
+                "            contentType" +
+                "            annotations" +
+                "        }" +
+                "     }";
+
+        GraphQLQuery graphqlQuery = new GraphQLQuery();
+        graphqlQuery.setQuery(body);
+
+        Call<GraphQLResponse> call = graphQLClient.getMessage(authService.getAppAuthToken(), graphqlQuery);
+
+        GraphQLResponse response = new GraphQLResponse();
+        Message message = new Message();
+        try {
+            response = call.execute().body();
+            LOGGER.info("Annotations="+response.getData().getMessage());
+            message = response.getData().getMessage();
+
+        } catch (IOException e ) {
+            LOGGER.error("Found no message with that id",e);
+        }
+
+        return message;
+
+    }
+
 
 }

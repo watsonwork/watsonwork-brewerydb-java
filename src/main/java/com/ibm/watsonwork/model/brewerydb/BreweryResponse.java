@@ -1,4 +1,4 @@
-package com.ibm.watsonwork.model;
+package com.ibm.watsonwork.model.brewerydb;
 
 import java.util.List;
 
