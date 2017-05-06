@@ -1,4 +1,4 @@
-package com.ibm.watsonwork.model;
+package com.ibm.watsonwork.model.graphql;
 
 import java.util.List;
 
@@ -11,6 +11,6 @@ public class Message {
     private String content;
     private String type;
     private double version;
-    private List<Annotation> annotations;
+    private List<String> annotations;
 
 }

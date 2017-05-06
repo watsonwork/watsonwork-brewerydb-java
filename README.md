@@ -1,6 +1,6 @@
 # watsonwork-brewerydb-java
 
-[![Build Status](https://travis-ci.org/watsonwork/watsonwork-brewerydb.svg)](https://travis-ci.org/watsonwork/watsonwork-brewerydb)
+[![Build Status](https://travis-ci.org/watsonwork/watsonwork-brewerydb-java.svg)](https://travis-ci.org/watsonwork/watsonwork-brewerydb-java)
 
 A sample Watson work cognitive app that integrates with http://www.brewerydb.com api's 
 to illustrate action fulfillment flows.
@@ -23,6 +23,12 @@ See deployment for notes on how to deploy the project on a live system.
 1. Navigate to http://www.brewerydb.com/developers and select 'Start Developing Now'.
 2. Follow the steps to create an account and request api access.
 3. Once approved you will receive an api key by email which you can use when filling out the application.yml file below.
+
+## Obtain a Google Geocoding api key
+
+1. Navigate to https://developers.google.com/maps/documentation/geocoding/start and select 'Get Key'.
+2. Follow the steps to create an account and request api access.
+3. Once you receive your key you can use it when filling out the application.yml file below.
 
 ## Creating Watson Work Services App
 
@@ -68,7 +74,7 @@ Prerequisite for running the app using IntelliJ IDEA:
 3. Open IntelliJ IDEA `File -> New -> Project from Exisiting Sources... `
 4. Navigate to the project and select `build.gradle`. Click `OK`
 5. Click `OK` on Import Project from Gradle window
-6. Open `src/main/resources/application.yml`
+6. Open `src/main/resources/application.yml` and full in the keys required.
 
 ```yaml
     watsonwork:
@@ -84,6 +90,11 @@ Prerequisite for running the app using IntelliJ IDEA:
             api:
                 uri: ${BREWERYDB_API_URI:http://api.brewerydb.com/}
                 key: ${BREWERYDB_API_KEY:you-api-key}                
+ 
+    google:
+            api:
+               uri: ${GOOGLE_API_URI:https://maps.googleapis.com/}
+               key: ${GOOGLE_API_KEY:your-api-key}               
  ```
 7. Right click on `ApplicationBoostrap.java` `->` `Run ApplicationBootstrap..`
 8. Open up terminal where ngrok is installed and run the command `ngrok.exe http 9080` on windows or `./ngrok http 9080` on unix. By default the app runs on `http port 9080`. This exposes your app via a publicly accessible URL. ngrok displays a forwarding url after executing the command above which might look as such: `http://sd2323.ngrok.io`. Take a note of that URL

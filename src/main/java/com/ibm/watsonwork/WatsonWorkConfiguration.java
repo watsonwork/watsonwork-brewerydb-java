@@ -22,6 +22,9 @@ public class WatsonWorkConfiguration {
     private BreweryDbProperties breweryDbProperties;
 
     @Autowired
+    private GoogleProperties googleProperties;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @Bean
@@ -50,6 +53,16 @@ public class WatsonWorkConfiguration {
                 .build();
     }
 
+    @Bean(name = "google")
+    public Retrofit retrofitGoogle(OkHttpClient client) {
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return new Retrofit.Builder()
+                .addConverterFactory(JacksonConverterFactory.create(objectMapper))
+                .baseUrl(googleProperties.getApiUri())
+                .client(client)
+                .build();
+    }
+
     @Bean
     public GraphQLClient graphQLClient(@Qualifier(value = "watsonwork") Retrofit retrofit) {
         return retrofit.create(GraphQLClient.class);
@@ -60,6 +73,10 @@ public class WatsonWorkConfiguration {
         return retrofit.create(BreweryDBClient.class);
     }
 
+    @Bean
+    public GoogleClient googleClient(@Qualifier(value = "google") Retrofit retrofit) {
+        return retrofit.create(GoogleClient.class);
+    }
 
     @Bean
     public AuthClient authClient(Retrofit retrofit) {

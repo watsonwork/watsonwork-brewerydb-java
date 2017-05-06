@@ -1,4 +1,4 @@
-package com.ibm.watsonwork.model;
+package com.ibm.watsonwork.model.graphql;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

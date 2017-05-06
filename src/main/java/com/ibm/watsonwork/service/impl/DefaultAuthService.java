@@ -5,8 +5,8 @@ import java.util.Date;
 
 import com.ibm.watsonwork.WatsonWorkConstants;
 import com.ibm.watsonwork.WatsonWorkProperties;
-import com.ibm.watsonwork.model.TokenResponse;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.TokenResponse;
+import com.ibm.watsonwork.model.graphql.WebhookEvent;
 import com.ibm.watsonwork.service.AuthService;
 import com.ibm.watsonwork.client.AuthClient;
 import org.apache.commons.codec.digest.HmacUtils;
@@ -37,7 +37,7 @@ public class DefaultAuthService implements AuthService {
                 TokenResponse tokenResponse = authClient.authenticateApp(createAppAuthHeader(), WatsonWorkConstants.CLIENT_CREDENTIALS).execute().body();
                 appTokenExpireTime = getDate(tokenResponse.getExpiresIn());
                 appToken = tokenResponse.getAccessToken();
-                System.out.println("appTokenExpireTime="+appTokenExpireTime);
+                LOGGER.info("appTokenExpireTime="+appTokenExpireTime);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage());
             }

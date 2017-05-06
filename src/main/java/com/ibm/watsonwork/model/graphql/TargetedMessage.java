@@ -1,4 +1,4 @@
-package com.ibm.watsonwork.model;
+package com.ibm.watsonwork.model.graphql;
 
 import java.util.List;
 

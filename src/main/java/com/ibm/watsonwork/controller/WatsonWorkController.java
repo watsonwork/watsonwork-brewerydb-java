@@ -1,12 +1,12 @@
 package com.ibm.watsonwork.controller;
 
 import com.ibm.watsonwork.WatsonWorkProperties;
-import com.ibm.watsonwork.model.AnnotationPayload;
-import com.ibm.watsonwork.model.Persist;
-import com.ibm.watsonwork.model.PersistObject;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.AnnotationPayload;
+import com.ibm.watsonwork.model.graphql.Message;
+import com.ibm.watsonwork.model.graphql.WebhookEvent;
 import com.ibm.watsonwork.service.AuthService;
 import com.ibm.watsonwork.service.BreweryDBService;
+import com.ibm.watsonwork.service.GraphQLService;
 import com.ibm.watsonwork.utils.MessageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.ibm.watsonwork.MessageTypes.ACTION_SELECTED;
-import static com.ibm.watsonwork.MessageTypes.FOCUS_ANNOTATION;
 import static com.ibm.watsonwork.MessageTypes.MESSAGE_ANNOTATION_ADDED;
 import static com.ibm.watsonwork.MessageTypes.VERIFICATION;
 import static com.ibm.watsonwork.WatsonWorkConstants.X_OUTBOUND_TOKEN;
@@ -36,10 +35,10 @@ public class WatsonWorkController {
     private BreweryDBService breweryDBService;
 
     @Autowired
-    private AuthService authService;
+    private GraphQLService graphQLService;
 
     @Autowired
-    private Persist persist;
+    private AuthService authService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WatsonWorkController.class);
 
@@ -56,14 +55,8 @@ public class WatsonWorkController {
 
         // Verify the challenge to the webhook
         if(VERIFICATION.equalsIgnoreCase(webhookEvent.getType()) && authService.isValidVerificationRequest(webhookEvent, outboundToken)) {
+            LOGGER.info("Verify");
             return buildVerificationResponse(webhookEvent);
-        }
-
-        // Get the action in the annotationPayload of message-annotation-added.
-        if(!watsonWorkProperties.getAppId().equals(webhookEvent.getUserId())
-                && MESSAGE_ANNOTATION_ADDED.equalsIgnoreCase(webhookEvent.getType())
-                && FOCUS_ANNOTATION.equalsIgnoreCase(webhookEvent.getAnnotationType())) {
-            persist = MessageUtils.storeObject(webhookEvent,persist);
         }
 
         // Process the message annotation added for actionSelected
@@ -71,28 +64,35 @@ public class WatsonWorkController {
                 && MESSAGE_ANNOTATION_ADDED.equalsIgnoreCase(webhookEvent.getType())
                 && ACTION_SELECTED.equalsIgnoreCase(webhookEvent.getAnnotationType())) {
 
-            PersistObject persistObject;
-            try {
-                persistObject = MessageUtils.retreiveObject(webhookEvent, persist);
-            } catch (NullPointerException e){
-                return ResponseEntity.ok().build();
-            }
+            LOGGER.info("Action Selected annotation received");
+
+            AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent.getAnnotationPayload());
+
+            // Make a graphql getMessage call to get the details of the message that the user clicked on.
+            Message message = graphQLService.getMessage(payload.getReferralMessageId());
 
             LOGGER.info("Message id [{}]", webhookEvent.getMessageId());
-            LOGGER.info("Returned  [{}]", persistObject.getMessageId());
+            LOGGER.info("Returned  [{}]", message.getId());
 
-            AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent);
-            AnnotationPayload payloadMessageFocus = MessageUtils.mapAnnotationPayload(persistObject.getWebhookEvent());
+            if (message.getId()!=null) {
 
+                AnnotationPayload payloadMessageFocus = new AnnotationPayload();
+                for(String annotation : message.getAnnotations()) {
+                    LOGGER.info("Result [{}]", annotation);
+                    if (annotation.contains("message-focus")) {
+                        payloadMessageFocus = MessageUtils.mapAnnotationPayload(annotation);
+                    }
+                }
 
-            if (payload.getTargetDialogId().equals(payload.getActionId())) {
-                // Make a brewerydb call and return a targetedResponse to respond as a targeted Message to the user.
-                breweryDBService.findBreweries(webhookEvent, payloadMessageFocus);
-            } else {
-                if (payload.getActionId().contains("Share")) {
-                    breweryDBService.shareBrewery(webhookEvent);
+                if (payload.getTargetDialogId().equals(payload.getActionId())) {
+                    // Make a brewerydb call and return a targetedResponse to respond as a targeted Message to the user.
+                    breweryDBService.findBreweries(webhookEvent, payloadMessageFocus);
                 } else {
-                    breweryDBService.getBrewery(webhookEvent);
+                    if (payload.getActionId().contains("Share")) {
+                        breweryDBService.shareBrewery(webhookEvent);
+                    } else {
+                        breweryDBService.getBrewery(webhookEvent);
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ibm.watsonwork.MessageTypes;
 import com.ibm.watsonwork.model.VerificationRequest;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.WebhookEvent;
 import com.ibm.watsonwork.utils.Utils;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.core.IsEqual;

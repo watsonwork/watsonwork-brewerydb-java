@@ -1,7 +1,7 @@
 package com.ibm.watsonwork.service;
 
-import com.ibm.watsonwork.model.AnnotationPayload;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.graphql.AnnotationPayload;
+import com.ibm.watsonwork.model.graphql.WebhookEvent;
 
 public interface BreweryDBService extends Service {
 

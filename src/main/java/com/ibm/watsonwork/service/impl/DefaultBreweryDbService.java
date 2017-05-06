@@ -5,16 +5,13 @@ import java.util.List;
 
 import com.ibm.watsonwork.BreweryDbProperties;
 import com.ibm.watsonwork.client.BreweryDBClient;
-import com.ibm.watsonwork.model.Annotation;
-import com.ibm.watsonwork.model.AnnotationPayload;
-import com.ibm.watsonwork.model.Brewery;
-import com.ibm.watsonwork.model.BreweryData;
-import com.ibm.watsonwork.model.BreweryResponse;
-import com.ibm.watsonwork.model.Button;
-import com.ibm.watsonwork.model.Entity;
-import com.ibm.watsonwork.model.TargetedMessage;
-import com.ibm.watsonwork.model.WebhookEvent;
+import com.ibm.watsonwork.model.brewerydb.Brewery;
+import com.ibm.watsonwork.model.brewerydb.BreweryDataGeoSearch;
+import com.ibm.watsonwork.model.brewerydb.BreweryResponseGeo;
+import com.ibm.watsonwork.model.google.LocationData;
+import com.ibm.watsonwork.model.graphql.*;
 import com.ibm.watsonwork.service.BreweryDBService;
+import com.ibm.watsonwork.service.GoogleService;
 import com.ibm.watsonwork.service.GraphQLService;
 import com.ibm.watsonwork.utils.MessageUtils;
 import org.slf4j.Logger;
@@ -37,62 +34,94 @@ public class DefaultBreweryDbService implements BreweryDBService {
     private BreweryDBClient breweryDBClient;
 
     @Autowired
+    private GoogleService googleService;
+
+    @Autowired
     private GraphQLService graphQLService;
 
     @Override
     public void findBreweries(WebhookEvent webhookEvent, AnnotationPayload payloadMessageFocus) {
-        String query = "";
+        String query;
+        String city = "";
+        String country = "";
 
         List<Entity> entities = payloadMessageFocus.getExtractedInfo().getEntities();
         for (Entity entity : entities) {
             if (entity.getType().equals("Country")) {
-                query = entity.getText();
+                country = entity.getText();
             }
             else if (entity.getType().equals("City")) {
-                query = entity.getText();
+                city = entity.getText();
             }
+        }
+
+        if (!city.equals("") && !country.equals("")) {
+            query = city + "," + country;
+        } else if (!country.equals("")) {
+            query = country;
+        } else {
+            query = city;
         }
 
         LOGGER.info("query [{}]", query);
 
-        Call<BreweryResponse> call = breweryDBClient.search(breweryDbProperties.getApiKey(), query);
+        LocationData locationData = googleService.getLocationData(query);
 
-        call.enqueue(new Callback<BreweryResponse>() {
+        Call<BreweryResponseGeo> call = breweryDBClient.geoSearch(breweryDbProperties.getApiKey(), Float.toString(locationData.getLat()), Float.toString(locationData.getLng()),"25");
+
+        call.enqueue(new Callback<BreweryResponseGeo>() {
             @Override
-            public void onResponse(Call<BreweryResponse> call, Response<BreweryResponse> response) {
-                BreweryResponse body = response.body();
+            public void onResponse(Call<BreweryResponseGeo> call, Response<BreweryResponseGeo> response) {
+                System.out.println(response.toString());
+                BreweryResponseGeo body = response.body();
                 LOGGER.info("response [{}]", body);
 
-                AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent);
-                List<BreweryData> breweryData = body.getData();
+                AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent.getAnnotationPayload());
+                List<BreweryDataGeoSearch> breweryData = body.getData();
 
-                List<Button> breweryButtons = new ArrayList<>();
-                for (BreweryData brewery : breweryData) {
-                    if (brewery.getType().equals("brewery")) {
+                if (body.getTotalResults()!=null) {
+
+                    List<Button> breweryButtons = new ArrayList<>();
+                    for (BreweryDataGeoSearch brewery : breweryData) {
+
                         Button breweryButton = new Button();
-                        breweryButton.setId(brewery.getId());
+                        breweryButton.setId(brewery.getBrewery().getId());
                         breweryButton.setStyle("PRIMARY");
-                        breweryButton.setTitle(brewery.getName());
+                        breweryButton.setTitle(brewery.getBrewery().getName());
                         breweryButtons.add(breweryButton);
                     }
+
+                    Annotation annotation = new Annotation();
+                    annotation.setTitle("We found " + body.getTotalResults() +" local breweries.");
+                    annotation.setText("");
+                    annotation.setButtons(breweryButtons);
+
+                    TargetedMessage targetedMessage = new TargetedMessage();
+                    targetedMessage.setConversationId(webhookEvent.getSpaceId());
+                    targetedMessage.setTargetDialogId(payload.getTargetDialogId());
+                    targetedMessage.setTargetUserId(webhookEvent.getUserId());
+                    targetedMessage.setAnnotation(annotation);
+
+                    graphQLService.createTargetedMessage(webhookEvent, targetedMessage);
+
+                } else {
+
+                    Annotation annotation = new Annotation();
+                    annotation.setTitle("We have not found any breweries");
+                    annotation.setText("");
+
+                    TargetedMessage targetedMessage = new TargetedMessage();
+                    targetedMessage.setConversationId(webhookEvent.getSpaceId());
+                    targetedMessage.setTargetDialogId(payload.getTargetDialogId());
+                    targetedMessage.setTargetUserId(webhookEvent.getUserId());
+                    targetedMessage.setAnnotation(annotation);
+
+                    graphQLService.createTargetedMessage(webhookEvent, targetedMessage);
                 }
-
-                Annotation annotation = new Annotation();
-                annotation.setTitle("We found these breweries ...");
-                annotation.setText("");
-                annotation.setButtons(breweryButtons);
-
-                TargetedMessage targetedMessage = new TargetedMessage();
-                targetedMessage.setConversationId(webhookEvent.getSpaceId());
-                targetedMessage.setTargetDialogId(payload.getTargetDialogId());
-                targetedMessage.setTargetUserId(webhookEvent.getUserId());
-                targetedMessage.setAnnotation(annotation);
-
-                graphQLService.createTargetedMessage(webhookEvent, targetedMessage);
             }
 
             @Override
-            public void onFailure(Call<BreweryResponse> call, Throwable t) {
+            public void onFailure(Call<BreweryResponseGeo> call, Throwable t) {
                 LOGGER.error("BreweryDB Request failed.", t);
             }
 
@@ -102,7 +131,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
     @Override
     public void getBrewery(WebhookEvent webhookEvent) {
-        AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent);
+        AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent.getAnnotationPayload());
 
         Call<Brewery> call = breweryDBClient.getBrewery(payload.getActionId(), breweryDbProperties.getApiKey());
 
@@ -132,12 +161,6 @@ public class DefaultBreweryDbService implements BreweryDBService {
                 shareButton.setTitle("Share");
                 breweryButtons.add(shareButton);
 
-                Button cancelButton = new Button();
-                cancelButton.setId("Cancel");
-                cancelButton.setStyle("SECONDARY");
-                cancelButton.setTitle("Cancel");
-                breweryButtons.add(cancelButton);
-
                 Annotation annotation = new Annotation();
                 annotation.setTitle(brewery.getData().getName());
                 annotation.setText(targetText);
@@ -163,7 +186,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
     @Override
     public void shareBrewery(WebhookEvent webhookEvent) {
-        AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent);
+        AnnotationPayload payload = MessageUtils.mapAnnotationPayload(webhookEvent.getAnnotationPayload());
 
         String actionId = payload.getActionId().substring(6);
 

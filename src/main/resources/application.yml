@@ -17,10 +17,10 @@ server:
 
 watsonwork:
         webhook:
-            secret: ${WEBHOOK_SECRET:eue4xl81qyzg5rtie0f5gsno4aaxgtj5}
+            secret: ${WEBHOOK_SECRET:your-webhook-sercret}
         app:
-            id: ${APP_ID:fc9e4a66-6520-4824-bca7-dd7466476dcd}
-            secret: ${APP_SECRET:as5te3ud61wejbxi2o2m2yd7lx74x88k}
+            id: ${APP_ID:your-app-id}
+            secret: ${APP_SECRET:your-app-secret}
         api:
             uri: ${WATSON_WORK_API_URI:https://api.watsonwork.ibm.com}
 
@@ -32,4 +32,9 @@ graphql:
 brewerydb:
         api:
             uri: ${BREWERYDB_API_URI:http://api.brewerydb.com/}
-            key: ${BREWERYDB_API_KEY:ad6f66fc6f2b94087954def7e165d9ca}
+            key: ${BREWERYDB_API_KEY:your-brewerydb-key}
+
+google:
+        api:
+            uri: ${GOOGLE_API_URI:https://maps.googleapis.com/}
+            key: ${GOOGLE_API_KEY:your-google-api-key}
