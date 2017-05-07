@@ -2,6 +2,7 @@ package com.ibm.watsonwork.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import com.ibm.watsonwork.BreweryDbProperties;
 import com.ibm.watsonwork.client.BreweryDBClient;
@@ -57,7 +58,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
         }
 
         if (!city.equals("") && !country.equals("")) {
-            query = city + "," + country;
+            query = String.format("%s,%s", city, country);
         } else if (!country.equals("")) {
             query = country;
         } else {
@@ -93,7 +94,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
                     }
 
                     Annotation annotation = new Annotation();
-                    annotation.setTitle("We found " + body.getTotalResults() +" local breweries.");
+                    annotation.setTitle(String.format("We found %s local breweries.", body.getTotalResults()));
                     annotation.setText("");
                     annotation.setButtons(breweryButtons);
 
@@ -144,7 +145,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 String targetText = "";
                 if (brewery.getData().getDescription() != null) {
-                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getDescription(),"utf8"));
+                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlUnescape(brewery.getData().getDescription()));
                 }
 
                 if (brewery.getData().getWebsite() != null) {
@@ -164,7 +165,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 Annotation annotation = new Annotation();
                 annotation.setTitle(brewery.getData().getName());
-                annotation.setText(targetText);
+                annotation.setText(targetText.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
                 annotation.setButtons(breweryButtons);
 
                 TargetedMessage targetedMessage = new TargetedMessage();
@@ -201,11 +202,11 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 String targetText = "";
                 if (brewery.getData().getName() != null) {
-                    targetText += String.format("*Brewery*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getName(),"utf8"));
+                    targetText += String.format("*Brewery*: %s \\n", HtmlUtils.htmlUnescape(brewery.getData().getName()));
                 }
 
                 if (brewery.getData().getDescription() != null) {
-                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlEscape(brewery.getData().getDescription(),"utf8"));
+                    targetText += String.format("*Description*: %s \\n", HtmlUtils.htmlUnescape(brewery.getData().getDescription()));
                 }
 
                 if (brewery.getData().getWebsite() != null) {
@@ -231,7 +232,7 @@ public class DefaultBreweryDbService implements BreweryDBService {
 
                 Annotation annotation = new Annotation();
                 annotation.setTitle("");
-                annotation.setText(targetText);
+                annotation.setText(targetText.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
                 annotation.setButtons(breweryButtons);
 
                 TargetedMessage targetedMessage = new TargetedMessage();
