@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/watsonwork/watsonwork-brewerydb-java.svg)](https://travis-ci.org/watsonwork/watsonwork-brewerydb-java)
 
-A sample Watson work cognitive app that integrates with http://www.brewerydb.com api's 
+A sample Watson enabled cognitive app that integrates with http://www.brewerydb.com api's 
 to illustrate action fulfillment flows.
 
 The Watson Work platform provides **spaces** for people to exchange
